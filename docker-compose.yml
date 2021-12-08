@@ -1,8 +1,34 @@
 version: '3'
 services:
   server:
-    build:
-YOUR CODE GOES HERE
-	client:
-    build:
-YOUR CODE GOES HERE
+    build: Container1
+    tty: true
+    stdin_open: true
+    networks:
+      docker_net:
+        ipv4_address: 172.0.0.4
+  client:
+    build: Container2
+    tty: true
+    stdin_open: true
+    ports:
+      - "10022:22"
+    secrets:
+      - client_ssh_key
+    networks:
+      docker_net:
+        ipv4_address: 172.0.0.1
+
+# Just for testing purposes to simulate CI behavior
+secrets:
+  client_ssh_key:
+    file: client_key.pub
+
+networks:
+  docker_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config: 
+        - subnet: 172.0.0.0/24
+          gateway: 172.0.0.3
