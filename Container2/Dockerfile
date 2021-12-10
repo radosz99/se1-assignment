@@ -1,17 +1,59 @@
 FROM ubuntu:16.04
       
-MAINTAINER Your name <your.name@mailbox.tu-dresden.de>
+MAINTAINER Radoslaw Lis <radoslaw.lis@mailbox.tu-dresden.de>
 
-RUN useradd --create-home -u 1000 Ubuntu
-#RUN echo 'Ubuntu:newpassword' | chpasswd
 RUN apt-get update
+RUN apt-get -y install sudo
+# Creating user and setting password
+RUN useradd --create-home -u 1000 ubuntu -g 0 &&  echo 'ubuntu:password' | chpasswd
+RUN adduser ubuntu sudo
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+# Global configuration
 RUN apt-get upgrade -y
 
+# Python configuration
+RUN apt-get install -y python
+
+# Configuration for ssh
 RUN apt-get install -y openssh-server
 RUN service ssh start
 EXPOSE 22
-
 CMD ["/usr/sbin/sshd","-D"]
 
-RUN mkdir /home/Ubuntu/.ssh
-RUN ln -s /run/secrets/client_ssh_key /home/Ubuntu/.ssh/authorized_keys
+
+# Configuration for mcperf
+RUN apt install -y gcc
+RUN apt-get install -y build-essential
+RUN wget https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/twemperf/mcperf-0.1.1.tar.gz
+RUN tar -xvf mcperf-0.1.1.tar.gz mcperf-0.1.1
+WORKDIR mcperf-0.1.1
+RUN ./configure
+RUN make
+RUN make install
+
+
+# Configuration for R
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
+RUN apt-get install -y software-properties-common
+RUN add-apt-repository 'deb [arch=amd64,i386] https://cran.rstudio.com/bin/linux/ubuntu xenial/'
+RUN apt-get install -y r-base
+
+# Copy stuff
+COPY Container2/ /home/ubuntu
+WORKDIR /home/ubuntu
+RUN chmod +x run.sh
+
+# Injecting keys
+RUN mkdir /home/ubuntu/.ssh
+COPY gitlab_id_rsa.pub /home/ubuntu/.ssh/authorized_keys
+
+# Dude configuration
+RUN apt install -y git
+RUN git clone https://bitbucket.org/db7/dude
+WORKDIR dude
+RUN sudo python setup.py install --home=/home/ubuntu/local
+RUN echo export PATH=$PATH:/home/ubuntu/local/bin >> /etc/bash.bashrc
+RUN echo export PYTHONPATH=/home/ubuntu/local/lib/python >> /etc/bash.bashrc
+
+
