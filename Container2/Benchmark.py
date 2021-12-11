@@ -1,31 +1,35 @@
 import os
 import stat
 
-def prepare_exp(SSHHost, SSHPort, REMOTEROOT, optpt):
+def prepare_exp(SSHHost, SSHPort, MEMCACHEDPort, optpt):
     f = open("config", 'w')
     f.write("Host benchmark\n")
     f.write("   Hostname %s\n" % SSHHost)
     f.write("   Port %d\n" % SSHPort)
+    f.write("   User ubuntu\n")
+    f.write("   IdentityFile /home/ubuntu/.ssh/containers_key\n")
     f.close()
     
 
     f = open("run-experiment.sh", 'w')
     f.write("#!/bin/bash\n")
     f.write("set -x\n\n")
-    
-    f.write("ssh -F config benchmark \"nohup ls dummy -p 11222 -P memcached.pid > memcached.out 2> memcached.err &\"\n") # adjust this line to properly start memcached
-    
+
+    f.write("ssh -oStrictHostKeyChecking=no -F config benchmark \"nohup memcached -d -p %d > memcached.out 2> memcached.err &\"\n" % MEMCACHEDPort)
+    f.write("ssh -F config benchmark \"pidof memcached > memcached.pid\"\n") 
     f.write("RESULT=`ssh -F config benchmark \"pidof memcached\"`\n")
 
     f.write("sleep 5\n")
 
     f.write("if [[ -z \"${RESULT// }\" ]]; then echo \"memcached process not running\"; CODE=1; else CODE=0; fi\n")
         
-    f.write("%s/dummy --execute-number=%d --concurrency=%d -s %s > stats.log\n\n" % (REMOTEROOT, optpt["noRequests"], optpt["concurrency"], SSHHost)) #adjust this line to properly start the client
-    
-    # add a few lines to extract the "Response rate" and "Response time \[ms\]: av and store them in $REQPERSEC and $LATENCY"
-    
-    f.write("ssh -F config benchmark \"sudo kill -9 $(cat memcached.pid)\"\n")
+    f.write("mcperf --linger=0 --conn-rate=%d --call-rate=%d --num-calls=%d --num-conns=%d --sizes=u1,16 --port=%d --server=%s &> stats.log\n\n" % (optpt["connRate"], optpt["callRate"], optpt["numCalls"], optpt["numConns"], MEMCACHEDPort, SSHHost))    
+
+    f.write("REQPERSEC=`grep \"Response rate\" stats.log | grep -Eo '[0-9]+([.][0-9]+)?' | head -1`\n")
+    f.write("LATENCY=`grep \"Response time\" stats.log | grep -Eo '[0-9]+([.][0-9]+)?' | head -1`\n")
+
+    f.write("ssh -F config benchmark \"ls\"\n")
+    f.write("ssh -F config benchmark \"kill $RESULT\"\n")
 
     f.write("echo \"requests latency\" > stats.csv\n")
     f.write("echo \"$REQPERSEC $LATENCY\" >> stats.csv\n")

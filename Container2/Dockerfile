@@ -1,3 +1,4 @@
+
 FROM ubuntu:16.04
       
 MAINTAINER Radoslaw Lis <radoslaw.lis@mailbox.tu-dresden.de>
@@ -5,7 +6,7 @@ MAINTAINER Radoslaw Lis <radoslaw.lis@mailbox.tu-dresden.de>
 RUN apt-get update
 RUN apt-get -y install sudo
 # Creating user and setting password
-RUN useradd --create-home -u 1000 ubuntu -g 0 &&  echo 'ubuntu:password' | chpasswd
+RUN useradd --create-home -u 1000 ubuntu &&  echo 'ubuntu:password' | chpasswd
 RUN adduser ubuntu sudo
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
@@ -14,6 +15,7 @@ RUN apt-get upgrade -y
 
 # Python configuration
 RUN apt-get install -y python
+RUN apt-get install -y git
 
 # Configuration for ssh
 RUN apt-get install -y openssh-server
@@ -46,10 +48,13 @@ RUN chmod +x run.sh
 
 # Injecting keys
 RUN mkdir /home/ubuntu/.ssh
+RUN touch /home/ubuntu/.ssh/known_hosts
 COPY gitlab_id_rsa.pub /home/ubuntu/.ssh/authorized_keys
+COPY containers_key /home/ubuntu/.ssh
+RUN chmod 777 /home/ubuntu/.ssh/containers_key
+RUN chmod 777 /home/ubuntu/.ssh/known_hosts
 
 # Dude configuration
-RUN apt install -y git
 RUN git clone https://bitbucket.org/db7/dude
 WORKDIR dude
 RUN sudo python setup.py install --home=/home/ubuntu/local
