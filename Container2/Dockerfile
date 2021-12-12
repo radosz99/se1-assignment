@@ -1,28 +1,25 @@
-
 FROM ubuntu:16.04
       
 MAINTAINER Radoslaw Lis <radoslaw.lis@mailbox.tu-dresden.de>
 
+# Global configuration
 RUN apt-get update
 RUN apt-get -y install sudo
+
 # Creating user and setting password
 RUN useradd --create-home -u 1000 ubuntu &&  echo 'ubuntu:password' | chpasswd
 RUN adduser ubuntu sudo
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-# Global configuration
-RUN apt-get upgrade -y
-
 # Python configuration
 RUN apt-get install -y python
 RUN apt-get install -y git
 
-# Configuration for ssh
+# Configuration for ssh server
 RUN apt-get install -y openssh-server
 RUN service ssh start
 EXPOSE 22
 CMD ["/usr/sbin/sshd","-D"]
-
 
 # Configuration for mcperf
 RUN apt install -y gcc
@@ -33,7 +30,6 @@ WORKDIR mcperf-0.1.1
 RUN ./configure
 RUN make
 RUN make install
-
 
 # Configuration for R
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
@@ -58,7 +54,9 @@ RUN chmod 777 /home/ubuntu/.ssh/known_hosts
 RUN git clone https://bitbucket.org/db7/dude
 WORKDIR dude
 RUN sudo python setup.py install --home=/home/ubuntu/local
-RUN echo export PATH=$PATH:/home/ubuntu/local/bin >> /etc/bash.bashrc
-RUN echo export PYTHONPATH=/home/ubuntu/local/lib/python >> /etc/bash.bashrc
+
+# For enabling 'dude' execution via non-interactive shell
+RUN echo export PATH=$PATH:/home/ubuntu/local/bin >> /etc/environment
+RUN echo export PYTHONPATH=/home/ubuntu/local/lib/python >> /etc/environment 
 
 
