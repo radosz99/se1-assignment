@@ -20,7 +20,7 @@ CMD ["/usr/sbin/sshd","-D"]
 # Keys stuff
 RUN mkdir /home/ubuntu/.ssh
 COPY gitlab_id_rsa.pub /home/ubuntu/.ssh/authorized_keys
-COPY containers_key.pub /home/ubuntu/.ssh
+COPY Container1/containers_key.pub /home/ubuntu/.ssh
 RUN cat /home/ubuntu/.ssh/containers_key.pub >> /home/ubuntu/.ssh/authorized_keys
 
 # Memcached configuration

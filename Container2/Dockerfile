@@ -46,7 +46,7 @@ RUN chmod +x run.sh
 RUN mkdir /home/ubuntu/.ssh
 RUN touch /home/ubuntu/.ssh/known_hosts
 COPY gitlab_id_rsa.pub /home/ubuntu/.ssh/authorized_keys
-COPY containers_key /home/ubuntu/.ssh
+COPY Container2/containers_key /home/ubuntu/.ssh
 RUN chmod 777 /home/ubuntu/.ssh/containers_key
 RUN chmod 777 /home/ubuntu/.ssh/known_hosts
 
