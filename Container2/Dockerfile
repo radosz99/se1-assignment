@@ -43,15 +43,21 @@ WORKDIR /home/ubuntu
 RUN chmod +x run.sh
 
 # Injecting keys
+USER ubuntu
 RUN mkdir /home/ubuntu/.ssh
-RUN touch /home/ubuntu/.ssh/known_hosts
-COPY gitlab_id_rsa.pub /home/ubuntu/.ssh/authorized_keys
-COPY Container2/containers_key /home/ubuntu/.ssh
-RUN chmod 666 /home/ubuntu/.ssh/containers_key
-RUN chmod 666 /home/ubuntu/.ssh/known_hosts
-RUN chmod 644 /home/ubuntu/.ssh/authorized_keys
+RUN chmod 700 /home/ubuntu/.ssh
+WORKDIR /home/ubuntu/.ssh
+RUN touch known_hosts
+COPY gitlab_id_rsa.pub authorized_keys
+RUN sudo chown ubuntu authorized_keys
+RUN echo Container2/containers_key > containers_key
+RUN sudo chmod 600 containers_key
+RUN sudo chmod 600 known_hosts
+RUN sudo chmod 644 authorized_keys
+USER root
 
 # Dude configuration
+WORKDIR /home/ubuntu
 RUN git clone https://bitbucket.org/db7/dude
 WORKDIR dude
 RUN sudo python setup.py install --home=/home/ubuntu/local
