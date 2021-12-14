@@ -47,8 +47,9 @@ RUN mkdir /home/ubuntu/.ssh
 RUN touch /home/ubuntu/.ssh/known_hosts
 COPY gitlab_id_rsa.pub /home/ubuntu/.ssh/authorized_keys
 COPY Container2/containers_key /home/ubuntu/.ssh
-RUN chmod 777 /home/ubuntu/.ssh/containers_key
-RUN chmod 777 /home/ubuntu/.ssh/known_hosts
+RUN chmod 666 /home/ubuntu/.ssh/containers_key
+RUN chmod 666 /home/ubuntu/.ssh/known_hosts
+RUN chmod 644 /home/ubuntu/.ssh/authorized_keys
 
 # Dude configuration
 RUN git clone https://bitbucket.org/db7/dude

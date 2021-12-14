@@ -22,6 +22,7 @@ RUN mkdir /home/ubuntu/.ssh
 COPY gitlab_id_rsa.pub /home/ubuntu/.ssh/authorized_keys
 COPY Container1/containers_key.pub /home/ubuntu/.ssh
 RUN cat /home/ubuntu/.ssh/containers_key.pub >> /home/ubuntu/.ssh/authorized_keys
+RUN chmod 644 /home/ubuntu/.ssh/authorized_keys
 
 # Memcached configuration
 RUN apt-get install -y memcached
