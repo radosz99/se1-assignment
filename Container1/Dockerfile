@@ -1,3 +1,4 @@
+
 FROM ubuntu:16.04
       
 MAINTAINER Radoslaw Lis <radoslaw.lis@mailbox.tu-dresden.de>
@@ -18,6 +19,10 @@ EXPOSE 22
 CMD ["/usr/sbin/sshd","-D"]
 
 
+# Copy stuff
+COPY Container1/ /home/ubuntu
+#RUN chmod 444 /home/ubuntu/Container1
+
 # Keys stuff
 USER ubuntu
 RUN mkdir /home/ubuntu/.ssh
@@ -26,7 +31,7 @@ WORKDIR /home/ubuntu/.ssh
 RUN touch known_hosts
 COPY gitlab_id_rsa.pub authorized_keys
 RUN sudo chown ubuntu authorized_keys
-RUN echo Container2/containers_key.pub > authorized_keys
+RUN cat /home/ubuntu/containers_key.pub >> authorized_keys
 RUN sudo chmod 600 known_hosts
 RUN sudo chmod 644 authorized_keys
 USER root

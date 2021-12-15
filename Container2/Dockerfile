@@ -50,7 +50,7 @@ WORKDIR /home/ubuntu/.ssh
 RUN touch known_hosts
 COPY gitlab_id_rsa.pub authorized_keys
 RUN sudo chown ubuntu authorized_keys
-RUN echo Container2/containers_key > containers_key
+RUN sudo cat /home/ubuntu/containers_key > containers_key
 RUN sudo chmod 600 containers_key
 RUN sudo chmod 600 known_hosts
 RUN sudo chmod 644 authorized_keys
