@@ -4,25 +4,12 @@ services:
     build:
       context: .
       dockerfile: Container1/Dockerfile
-    networks:
-      docker_net:
-        ipv4_address: 172.0.0.2 
+    container_name: memcached_server
     ports:
       - "20022:22"
   client:
     build:
       context: .
       dockerfile: Container2/Dockerfile
-    networks:
-      docker_net:
-        ipv4_address: 172.0.0.3
     ports:
       - "10022:22"
-
-networks:
-  docker_net:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.0.0.0/24
